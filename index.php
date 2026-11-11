@@ -1,76 +1,53 @@
 <?php
 
-interface Reportable {
-    public function generate(): string;
-}
+class Student {
+    public function __construct(private string $name, private string $group) {}
 
-abstract class StudentBase {
-    public function __construct(protected string $name, protected string $group) {}
-}
-
-class AverageReport extends StudentBase implements Reportable {
-    public function __construct(string $name, string $group, private array $grades) {
-        parent::__construct($name, $group);
+    public function getName(): string {
+        return $this->name;
     }
-
-    public function generate(): string {
-        $avg = array_sum($this->grades) / count($this->grades);
-        return "<tr><td>{$this->name}</td><td>{$this->group}</td><td>Успеваемость</td><td>Ср. балл: " . round($avg, 2) . "</td></tr>";
+    public function getGroup(): string {
+        return $this->group;
     }
 }
 
-class AttendanceReport extends StudentBase implements Reportable {
-    public function __construct(string $name, string $group, private int $missed) {
-        parent::__construct($name, $group);
-    }
+class Subject {
+    public function __construct(private string $title) {}
 
-    public function generate(): string {
-        return "<tr><td>{$this->name}</td><td>{$this->group}</td><td>Посещаемость</td><td>Пропусков: {$this->missed}</td></tr>";
+    public function getTitle(): string {
+        return $this->title;
     }
 }
 
-$reports = [
-    new AverageReport("Репенко Ярослав Андреевич", "ИСП-341", [5, 4, 5, 3, 5]),
-    new AttendanceReport("Репенко Ярослав Андреевич", "ИСП-341", 2),
-    new AverageReport("Смирнова Анна Сергеевна", "ИСП-341", [4, 4, 5, 4, 5]),
-    new AttendanceReport("Смирнова Анна Сергеевна", "ИСП-341", 0),
-];
+class Grade {
+    private int $value;
+
+    public function __construct(int $value) {
+        if ($value < 2 || $value > 5) {
+            throw new Exception("Оценка должна быть от 2 до 5!");
+        }
+        $this->value = $value;
+    }
+
+    public function getValue(): int {
+        return $this->value;
+    }
+}
+
+try {
+    $student = new Student("Репенко Ярослав Андреевич", "ИСП-341");
+    $subject = new Subject("Программирование в PHP");
+    
+    $grade1 = new Grade(5);
+    $grade2 = new Grade(4);
+
+    echo "<h2>Базовая модель</h2>";
+    echo "Студент: " . $student->getName() . "<br>";
+    echo "Группа: " . $student->getGroup() . "<br>";
+    echo "Предмет: " . $subject->getTitle() . "<br>";
+    echo "Оценки: " . $grade1->getValue() . ", " . $grade2->getValue() . "<br>";
+
+} catch (Exception $e) {
+    echo "Ошибка: " . $e->getMessage();
+}
 ?>
-
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>Журнал ИСП-341</title>
-    <style>
-        body { font-family: sans-serif; background: #e0e0e0; padding: 40px; margin: 0; }
-        .journal { max-width: 900px; margin: 0 auto; background: #fff; padding: 30px; border: 2px solid #000; }
-        h1 { text-align: center; font-size: 20px; text-transform: uppercase; margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #000; padding: 10px; text-align: left; }
-        th { background: #000; color: #fff; }
-    </style>
-</head>
-<body>
-    <div class="journal">
-        <h1>Ведомость группы ИСП-341</h1>
-        <table>
-            <thead>
-                <tr>
-                    <th>Студент</th>
-                    <th>Группа</th>
-                    <th>Тип отчета</th>
-                    <th>Показатель</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                foreach ($reports as $report) {
-                    echo $report->generate();
-                }
-                ?>
-            </tbody>
-        </table>
-    </div>
-</body>
-</html>
